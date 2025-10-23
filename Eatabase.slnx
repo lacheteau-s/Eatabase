@@ -1,2 +1,5 @@
 <Solution>
+	<Folder Name="/src/">
+		<Project Path="src/Eatabase.API/Eatabase.API.csproj" />
+	</Folder>
 </Solution>
