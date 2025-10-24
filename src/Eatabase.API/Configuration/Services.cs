@@ -5,10 +5,24 @@ namespace Eatabase.API.Configuration;
 
 internal static class ServicesConfiguration
 {
-	public static void ConfigureServices(this IServiceCollection services)
+	public static void ConfigureServices(this IHostApplicationBuilder builder)
 	{
+		var services = builder.Services;
+		var configuration = builder.Configuration;
+
 		services.AddOpenApi();
 
-		services.AddDbContext<AppDbContext>(options => options.UseSqlServer());
+		services.AddDbContextWithConnectionString<AppDbContext>(configuration.GetConnectionString("Eatabase"));
+	}
+
+	private static void AddDbContextWithConnectionString<T>(
+		this IServiceCollection services,
+		string? connectionString
+	) where T : DbContext
+	{
+		if (string.IsNullOrWhiteSpace(connectionString))
+			throw new InvalidOperationException($"Connection string '{connectionString}' not found.");
+
+		services.AddDbContext<T>(options => options.UseSqlServer(connectionString));
 	}
 }
