@@ -1,0 +1,9 @@
+<Solution>
+	<Folder Name="/src/">
+		<Project Path="src/Eatabase.API/Eatabase.API.csproj" />
+	</Folder>
+	<Folder Name="/tests/">
+		<Project Path="tests/Eatabase.API.IntegrationTests/Eatabase.API.IntegrationTests.csproj" />
+		<Project Path="tests/Eatabase.API.UnitTests/Eatabase.API.UnitTests.csproj" />
+	</Folder>
+</Solution>
