@@ -1,4 +1,5 @@
 using Eatabase.API.Data;
+using Eatabase.API.Features.Products;
 using Microsoft.EntityFrameworkCore;
 
 namespace Eatabase.API.Configuration;
@@ -13,6 +14,8 @@ internal static class ServicesConfiguration
 		services.AddOpenApi();
 
 		services.AddDbContextWithConnectionString<AppDbContext>(configuration.GetConnectionString("Eatabase"));
+
+		services.AddScoped<CreateProductRequestHandler>();
 	}
 
 	private static void AddDbContextWithConnectionString<T>(
