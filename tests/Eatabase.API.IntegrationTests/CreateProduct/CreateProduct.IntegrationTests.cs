@@ -1,16 +1,17 @@
 using System.Net;
 using System.Net.Http.Json;
+using Eatabase.API.Data;
 using Eatabase.API.Features.Products;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Eatabase.API.IntegrationTests.CreateProduct;
 
 using TestData = CreateProductIntegrationTestsData;
 
 public sealed class CreateProductTests(
-	WebApplicationFactory<Program> factory
-) : IClassFixture<WebApplicationFactory<Program>>
+	InMemoryDbWebApplicationFactory factory
+) : IClassFixture<InMemoryDbWebApplicationFactory>
 {
 	private readonly HttpClient _apiClient = factory.CreateClient();
 
@@ -22,18 +23,44 @@ public sealed class CreateProductTests(
 		return (response, result);
 	}
 
+	private async Task<Product?> FindProduct(Guid productId)
+	{
+		using var scope = factory.Services.CreateScope();
+		var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+		return await dbContext.Products.FindAsync(productId);
+	}
+
 	[Theory]
 	[MemberData(nameof(TestData.ValidRequests), MemberType = typeof(TestData))]
-	internal async Task CreateProduct_With_ValidRequest_Returns_Created_With_Guid(CreateProductRequest request)
+	internal async Task CreateProduct_With_ValidRequest_Returns_Created_And_Persists(CreateProductRequest request)
 	{
 		// Act
 		var (response, result) = await CreateProduct(request);
 
 		// Assert
 		response.StatusCode.Should().Be(HttpStatusCode.Created);
-		response.Headers.Location.Should().NotBeNull();
-		response.Headers.Location.Should().Be($"/products/{result}");
+		response.Headers.Location.Should().NotBeNull().And.Be($"/products/{result}");
 
 		result.Should().NotBe(Guid.Empty);
+
+		var product = await FindProduct(result);
+
+		product.Should().NotBeNull();
+		product.Id.Should().Be(result);
+		product.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+		product.UpdatedAt.Should().BeNull();
+		product.Brand.Should().Be(request.Brand);
+		product.Name.Should().Be(request.Name);
+		product.ServingSize.Should().Be(request.ServingSize);
+		product.ServingSizeMetric.Should().Be(request.ServingSizeMetric);
+		product.Calories.Should().Be(request.Calories);
+		product.TotalFat.Should().Be(request.TotalFat);
+		product.SaturatedFat.Should().Be(request.SaturatedFat);
+		product.TransFat.Should().Be(request.TransFat);
+		product.TotalCarbs.Should().Be(request.TotalCarbs);
+		product.Sugars.Should().Be(request.Sugars);
+		product.Fiber.Should().Be(request.Fiber);
+		product.Protein.Should().Be(request.Protein);
 	}
 }
