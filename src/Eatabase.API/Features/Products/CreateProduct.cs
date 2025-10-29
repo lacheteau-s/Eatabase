@@ -12,11 +12,13 @@ internal static class CreateProduct
 		router.MapPost(_route, Endpoint);
 	}
 
-	private static Created<Guid> Endpoint(
+	private static async Task<Created<Guid>> Endpoint(
+		CancellationToken ct,
 		[FromServices] CreateProductRequestHandler handler,
-		[FromBody] CreateProductRequest request)
+		[FromBody] CreateProductRequest request
+	)
 	{
-		var id = handler.Handle(request);
+		var id = await handler.HandleAsync(request, ct);
 
 		return TypedResults.Created($"{_route}/{id}", id);
 	}
