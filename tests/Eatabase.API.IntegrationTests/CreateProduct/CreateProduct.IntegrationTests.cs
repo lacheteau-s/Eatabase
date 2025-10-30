@@ -1,9 +1,7 @@
 using System.Net;
-using System.Net.Http.Json;
-using Eatabase.API.Data;
 using Eatabase.API.Features.Products;
 using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 
 namespace Eatabase.API.IntegrationTests.CreateProduct;
 
@@ -13,30 +11,14 @@ public sealed class CreateProductTests(
 	InMemoryDbWebApplicationFactory factory
 ) : IClassFixture<InMemoryDbWebApplicationFactory>
 {
-	private readonly HttpClient _apiClient = factory.CreateClient();
-
-	private async Task<(HttpResponseMessage, Guid)> CreateProduct(CreateProductRequest request)
-	{
-		var response = await _apiClient.PostAsJsonAsync("/products", request);
-		var result = await response.Content.ReadFromJsonAsync<Guid>();
-
-		return (response, result);
-	}
-
-	private async Task<Product?> FindProduct(Guid productId)
-	{
-		using var scope = factory.Services.CreateScope();
-		var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-		return await dbContext.Products.FindAsync(productId);
-	}
+	private readonly CreateProductIntegrationTestsHelpers _helpers = new (factory);
 
 	[Theory]
 	[MemberData(nameof(TestData.ValidRequests), MemberType = typeof(TestData))]
 	internal async Task CreateProduct_With_ValidRequest_Returns_Created_And_Persists(CreateProductRequest request)
 	{
 		// Act
-		var (response, result) = await CreateProduct(request);
+		var (response, result) = await _helpers.CreateProductWithResult(request);
 
 		// Assert
 		response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -44,7 +26,7 @@ public sealed class CreateProductTests(
 
 		result.Should().NotBe(Guid.Empty);
 
-		var product = await FindProduct(result);
+		var product = await _helpers.FindProduct(result);
 
 		product.Should().NotBeNull();
 		product.Id.Should().Be(result);
@@ -62,5 +44,43 @@ public sealed class CreateProductTests(
 		product.Sugars.Should().Be(request.Sugars);
 		product.Fiber.Should().Be(request.Fiber);
 		product.Protein.Should().Be(request.Protein);
+	}
+
+	[Fact]
+	internal async Task CreateProduct_With_DuplicateBrandAndName_Returns_Conflict()
+	{
+		// Arrange
+		var request = TestData.BaseRequest with { Brand = "Duplicate Brand", Name = "Duplicate Name" };
+
+		// Act
+		var (response1, result1) = await _helpers.CreateProductWithResult(request);
+		var response2 = await _helpers.CreateProduct(request);
+
+		// Assert
+		response1.StatusCode.Should().Be(HttpStatusCode.Created);
+		response2.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+		var products = await _helpers.WithDbContext(async dbContext =>
+			await dbContext.Products.Where(p => p.Brand == request.Brand && p.Name == request.Name).ToListAsync()
+		);
+
+		products.Should().ContainSingle();
+		products.Single().Id.Should().Be(result1);
+	}
+
+	[Theory]
+	[MemberData(nameof(TestData.DifferentBrandNameCombination), MemberType = typeof(TestData))]
+	internal async Task CreateProduct_With_DifferentBrandNameCombination_Returns_Created(
+		CreateProductRequest request1,
+		CreateProductRequest request2
+	)
+	{
+		// Act
+		var response1 = await _helpers.CreateProduct(request1);
+		var response2 = await _helpers.CreateProduct(request2);
+
+		// Assert
+		response1.StatusCode.Should().Be(HttpStatusCode.Created);
+		response2.StatusCode.Should().Be(HttpStatusCode.Created);
 	}
 }

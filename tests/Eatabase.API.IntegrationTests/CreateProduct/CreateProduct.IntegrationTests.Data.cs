@@ -4,7 +4,7 @@ namespace Eatabase.API.IntegrationTests.CreateProduct;
 
 internal static class CreateProductIntegrationTestsData
 {
-	private static CreateProductRequest BaseRequest => new(
+	public static CreateProductRequest BaseRequest => new(
 		Brand: "Test Brand",
 		Name: "Test Name",
 		ServingSize: "10 oz",
@@ -19,7 +19,7 @@ internal static class CreateProductIntegrationTestsData
 		Protein: 2.1m
 	);
 
-	private static CreateProductRequest BaseRequestWithNulls => BaseRequest with
+	public static CreateProductRequest BaseRequestWithNulls => BaseRequest with
 	{
 		SaturatedFat = null,
 		TransFat = null,
@@ -29,7 +29,21 @@ internal static class CreateProductIntegrationTestsData
 
 	public static TheoryData<CreateProductRequest> ValidRequests =>
 	[
-		BaseRequest,
-		BaseRequestWithNulls
+		BaseRequest with { Name = "Valid Request 1" },
+		BaseRequestWithNulls with { Name = "Valid Request 2" }
 	];
+
+	public static TheoryData<CreateProductRequest, CreateProductRequest> DifferentBrandNameCombination => new()
+	{
+		// Same Brand different Name
+		{
+			BaseRequest with { Brand = "Same Brand", Name = "Name 1" },
+			BaseRequest with { Brand = "Same Brand", Name = "Name 2" }
+		},
+		// Same Name different Brand
+		{
+			BaseRequest with { Brand = "Brand 1", Name = "Same Name" },
+			BaseRequest with { Brand = "Brand 2", Name = "Same Name" }
+		}
+	};
 }

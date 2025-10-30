@@ -29,20 +29,55 @@ public sealed class CreateProductRequestHandlerTests
 		var id = await _handler.HandleAsync(request, default);
 
 		// Assert
-		id.Should().NotBe(Guid.Empty);
+		id.Should().NotBeNull().And.NotBe(Guid.Empty);
 	}
 
 	[Fact]
 	internal async Task Handle_With_MultipleRequests_Returns_UniqueIds()
 	{
+		// Arrange
+		var request1 = TestData.BaseRequest with { Name = "Request 1" };
+		var request2 = TestData.BaseRequestWithNulls with { Name = "Request 2" };
+
 		// Act
-		var id1 = await _handler.HandleAsync(TestData.BaseRequest, default);
-		var id2 = await _handler.HandleAsync(TestData.BaseRequestWithNulls, default);
+		var id1 = await _handler.HandleAsync(request1, default);
+		var id2 = await _handler.HandleAsync(request2, default);
 
 		// Assert
-		id1.Should().NotBe(Guid.Empty);
-		id2.Should().NotBe(Guid.Empty);
+		id1.Should().NotBeNull().And.NotBe(Guid.Empty);
+		id2.Should().NotBeNull().And.NotBe(Guid.Empty);
 
-		id1.Should().NotBe(id2);
+		id1.Value.Should().NotBe(id2.Value);
+	}
+
+	[Fact]
+	internal async Task Handle_With_DuplicateBrandAndName_Returns_Null()
+	{
+		// Act
+		var original = await _handler.HandleAsync(TestData.BaseRequest, default);
+		var duplicate = await _handler.HandleAsync(TestData.BaseRequest, default);
+
+		// Assert
+		original.Should().NotBeNull().And.NotBe(Guid.Empty);
+
+		duplicate.Should().BeNull();
+	}
+
+	[Theory]
+	[MemberData(nameof(TestData.DifferentBrandNameCombination), MemberType = typeof(TestData))]
+	internal async Task Handle_With_DifferentBrandNameCombination_Returns_Guid(
+		CreateProductRequest request1,
+		CreateProductRequest request2
+	)
+	{
+		// Act
+		var product1 = await _handler.HandleAsync(request1, default);
+		var product2 = await _handler.HandleAsync(request2, default);
+
+		// Assert
+		product1.Should().NotBeNull().And.NotBe(Guid.Empty);
+		product2.Should().NotBeNull().And.NotBe(Guid.Empty);
+
+		product1.Value.Should().NotBe(product2.Value);
 	}
 }

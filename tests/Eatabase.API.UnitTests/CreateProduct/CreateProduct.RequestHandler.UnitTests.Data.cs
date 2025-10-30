@@ -33,4 +33,18 @@ internal static class CreateProductRequestHandlerTestsData
 		BaseRequest,
 		BaseRequestWithNulls
 	];
+
+	public static TheoryData<CreateProductRequest, CreateProductRequest> DifferentBrandNameCombination => new()
+	{
+		// Same Brand different Name
+		{
+			BaseRequest with { Name = "Name 1" },
+			BaseRequest with { Name = "Name 2" }
+		},
+		// Same Name different Brand
+		{
+			BaseRequest with { Brand = "Brand 1" },
+			BaseRequest with { Brand = "Brand 2" }
+		}
+	};
 }
