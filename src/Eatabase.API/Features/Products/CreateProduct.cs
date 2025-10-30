@@ -12,7 +12,7 @@ internal static class CreateProduct
 		router.MapPost(_route, Endpoint);
 	}
 
-	private static async Task<Created<Guid>> Endpoint(
+	private static async Task<Results<Conflict, Created<Guid>>> Endpoint(
 		CancellationToken ct,
 		[FromServices] CreateProductRequestHandler handler,
 		[FromBody] CreateProductRequest request
@@ -20,6 +20,9 @@ internal static class CreateProduct
 	{
 		var id = await handler.HandleAsync(request, ct);
 
-		return TypedResults.Created($"{_route}/{id}", id);
+		if (id is null)
+			return TypedResults.Conflict();
+
+		return TypedResults.Created($"{_route}/{id.Value}", id.Value);
 	}
 }

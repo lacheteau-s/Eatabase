@@ -4,8 +4,15 @@ namespace Eatabase.API.Features.Products;
 
 internal class CreateProductRequestHandler(AppDbContext dbContext)
 {
-	public async Task<Guid> HandleAsync(CreateProductRequest request, CancellationToken ct)
+	public async Task<Guid?> HandleAsync(CreateProductRequest request, CancellationToken ct)
 	{
+		var exists = dbContext.Products.Any(p =>
+			p.Brand == request.Brand && p.Name == request.Name
+		);
+
+		if (exists)
+			return null;
+
 		var product = new Product
 		{
 			Brand = request.Brand,
