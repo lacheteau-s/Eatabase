@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,12 +13,18 @@ internal static class CreateProduct
 		router.MapPost(_route, Endpoint);
 	}
 
-	private static async Task<Results<Conflict, Created<Guid>>> Endpoint(
-		CancellationToken ct,
+	private static async Task<Results<ValidationProblem, Conflict, Created<Guid>>> Endpoint(
+		[FromServices] IValidator<CreateProductRequest> validator,
 		[FromServices] CreateProductRequestHandler handler,
-		[FromBody] CreateProductRequest request
+		[FromBody] CreateProductRequest request,
+		CancellationToken ct
 	)
 	{
+		var validationResult = validator.Validate(request);
+
+		if (!validationResult.IsValid)
+			return TypedResults.ValidationProblem(validationResult.ToDictionary());
+
 		var id = await handler.HandleAsync(request, ct);
 
 		if (id is null)

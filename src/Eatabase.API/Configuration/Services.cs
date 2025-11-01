@@ -1,5 +1,6 @@
 using Eatabase.API.Data;
 using Eatabase.API.Features.Products;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 namespace Eatabase.API.Configuration;
@@ -16,6 +17,7 @@ internal static class ServicesConfiguration
 		services.AddDbContextWithConnectionString<AppDbContext>(configuration.GetConnectionString("Eatabase"));
 
 		services.AddScoped<CreateProductRequestHandler>();
+		services.AddScoped<IValidator<CreateProductRequest>, CreateProductRequestValidator>();
 	}
 
 	private static void AddDbContextWithConnectionString<T>(
