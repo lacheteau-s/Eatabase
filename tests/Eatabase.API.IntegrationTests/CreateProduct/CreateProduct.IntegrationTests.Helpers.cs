@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
+using System.Runtime.Serialization;
 using Eatabase.API.Data;
 using Eatabase.API.Features.Products;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,6 +20,15 @@ internal class CreateProductIntegrationTestsHelpers(WebApplicationFactory<Progra
 		var response = await CreateProduct(request);
 		var result = await response.Content.ReadFromJsonAsync<Guid>();
 
+		return (response, result);
+	}
+
+	public async Task<(HttpResponseMessage, HttpValidationProblemDetails)> CreateProductWithValidationErrors(CreateProductRequest request)
+	{
+		var response = await CreateProduct(request);
+		var result = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>()
+			?? throw new SerializationException("Could not deserialize validation problem details.");
+		
 		return (response, result);
 	}
 

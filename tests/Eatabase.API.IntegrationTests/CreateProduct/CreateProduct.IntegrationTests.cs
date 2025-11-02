@@ -50,7 +50,7 @@ public sealed class CreateProductTests(
 	internal async Task CreateProduct_With_DuplicateBrandAndName_Returns_Conflict()
 	{
 		// Arrange
-		var request = TestData.BaseRequest with { Brand = "Duplicate Brand", Name = "Duplicate Name" };
+		var request = TestData.DuplicateBrandAndName;
 
 		// Act
 		var (response1, result1) = await _helpers.CreateProductWithResult(request);
@@ -82,5 +82,27 @@ public sealed class CreateProductTests(
 		// Assert
 		response1.StatusCode.Should().Be(HttpStatusCode.Created);
 		response2.StatusCode.Should().Be(HttpStatusCode.Created);
+	}
+
+	[Fact]
+	internal async Task CreateProduct_WithInvalidRequest_Returns_BadRequest_WithErrors()
+	{
+		// Act
+		var (response, result) = await _helpers.CreateProductWithValidationErrors(TestData.InvalidRequest);
+
+		// Assert
+		response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+		result.Errors.Should()
+			.HaveCount(7).And
+			.ContainKeys([
+				nameof(CreateProductRequest.Brand),
+				nameof(CreateProductRequest.Name),
+				nameof(CreateProductRequest.ServingSize),
+				nameof(CreateProductRequest.ServingSizeMetric),
+				nameof(CreateProductRequest.Calories),
+				nameof(CreateProductRequest.TotalFat),
+				nameof(CreateProductRequest.TotalCarbs)
+			]);
 	}
 }

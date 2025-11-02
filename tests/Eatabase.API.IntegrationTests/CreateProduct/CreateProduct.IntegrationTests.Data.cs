@@ -19,7 +19,7 @@ internal static class CreateProductIntegrationTestsData
 		Protein: 2.1m
 	);
 
-	public static CreateProductRequest BaseRequestWithNulls => BaseRequest with
+	public static CreateProductRequest WithoutOptionalFields => BaseRequest with
 	{
 		SaturatedFat = null,
 		TransFat = null,
@@ -30,8 +30,14 @@ internal static class CreateProductIntegrationTestsData
 	public static TheoryData<CreateProductRequest> ValidRequests =>
 	[
 		BaseRequest with { Name = "Valid Request 1" },
-		BaseRequestWithNulls with { Name = "Valid Request 2" }
+		WithoutOptionalFields with { Name = "Valid Request 2" }
 	];
+
+	public static CreateProductRequest DuplicateBrandAndName => BaseRequest with
+	{
+		Brand = "Duplicate Brand",
+		Name = "Duplicate Name"
+	};
 
 	public static TheoryData<CreateProductRequest, CreateProductRequest> DifferentBrandNameCombination => new()
 	{
@@ -45,5 +51,16 @@ internal static class CreateProductIntegrationTestsData
 			BaseRequest with { Brand = "Brand 1", Name = "Same Name" },
 			BaseRequest with { Brand = "Brand 2", Name = "Same Name" }
 		}
+	};
+
+	public static CreateProductRequest InvalidRequest => BaseRequest with
+	{
+		Brand = null!,
+		Name = string.Empty,
+		ServingSize = new string(' ', 25),
+		ServingSizeMetric = new string('A', 26),
+		Calories = 1000,
+		TotalFat = 100,
+		TotalCarbs = -0.01m
 	};
 }

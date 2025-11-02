@@ -2,49 +2,33 @@ using Eatabase.API.Features.Products;
 
 namespace Eatabase.API.UnitTests.CreateProduct;
 
+using SharedData = CreateProductTestData;
+
 internal static class CreateProductRequestHandlerTestsData
 {
-	public static CreateProductRequest BaseRequest => new
-	(
-		Brand: "Test Brand",
-		Name: "Test Name",
-		ServingSize: "10 oz",
-		ServingSizeMetric: "300 g",
-		Calories: 123,
-		TotalFat: 4.5m,
-		SaturatedFat: 6.7m,
-		TransFat: 8.9m,
-		TotalCarbs: 8.7m,
-		Sugars: 6.5m,
-		Fiber: 4.3m,
-		Protein: 2.1m
-	);
-
-	public static CreateProductRequest BaseRequestWithNulls => BaseRequest with
-	{
-		SaturatedFat = null,
-		TransFat = null,
-		Sugars = null,
-		Fiber = null
-	};
-
 	public static TheoryData<CreateProductRequest> Requests =>
 	[
-		BaseRequest,
-		BaseRequestWithNulls
+		SharedData.BaseRequest,
+		SharedData.WithoutOptionalFields
 	];
+
+	public static (CreateProductRequest, CreateProductRequest) MultipleRequests =>
+	(
+		SharedData.BaseRequest with { Name = "Request 1" },
+		SharedData.WithoutOptionalFields with { Name = "Request 2" }
+	);
 
 	public static TheoryData<CreateProductRequest, CreateProductRequest> DifferentBrandNameCombination => new()
 	{
 		// Same Brand different Name
 		{
-			BaseRequest with { Name = "Name 1" },
-			BaseRequest with { Name = "Name 2" }
+			SharedData.BaseRequest with { Name = "Name 1" },
+			SharedData.BaseRequest with { Name = "Name 2" }
 		},
 		// Same Name different Brand
 		{
-			BaseRequest with { Brand = "Brand 1" },
-			BaseRequest with { Brand = "Brand 2" }
+			SharedData.BaseRequest with { Brand = "Brand 1" },
+			SharedData.BaseRequest with { Brand = "Brand 2" }
 		}
 	};
 }

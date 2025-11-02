@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Eatabase.API.UnitTests.CreateProduct;
 
+using SharedTestData = CreateProductTestData;
 using TestData = CreateProductRequestHandlerTestsData;
 
 public sealed class CreateProductRequestHandlerTests
@@ -36,8 +37,7 @@ public sealed class CreateProductRequestHandlerTests
 	internal async Task Handle_With_MultipleRequests_Returns_UniqueIds()
 	{
 		// Arrange
-		var request1 = TestData.BaseRequest with { Name = "Request 1" };
-		var request2 = TestData.BaseRequestWithNulls with { Name = "Request 2" };
+		var (request1, request2) = TestData.MultipleRequests;
 
 		// Act
 		var id1 = await _handler.HandleAsync(request1, default);
@@ -54,8 +54,8 @@ public sealed class CreateProductRequestHandlerTests
 	internal async Task Handle_With_DuplicateBrandAndName_Returns_Null()
 	{
 		// Act
-		var original = await _handler.HandleAsync(TestData.BaseRequest, default);
-		var duplicate = await _handler.HandleAsync(TestData.BaseRequest, default);
+		var original = await _handler.HandleAsync(SharedTestData.BaseRequest, default);
+		var duplicate = await _handler.HandleAsync(SharedTestData.BaseRequest, default);
 
 		// Assert
 		original.Should().NotBeNull().And.NotBe(Guid.Empty);
