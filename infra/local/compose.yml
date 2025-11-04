@@ -1,0 +1,17 @@
+name: Eatabase
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: eatabase-db
+    environment:
+      SA_PASSWORD: ${DB_PASSWORD}
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - db_data:/var/opt/db
+
+volumes:
+  db_data:
+    name: eatabase-db-data
