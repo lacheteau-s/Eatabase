@@ -1,9 +1,20 @@
+using Eatabase.API.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace Eatabase.API.Features.Products;
 
-internal sealed class ListProductSummariesRequestHandler
+internal sealed class ListProductSummariesRequestHandler(AppDbContext dbContext)
 {
-	public List<ProductSummary> Handle()
+	public async Task<List<ProductSummary>> HandleAsync(CancellationToken ct)
 	{
-		return [];
+		var summaries = await dbContext.Products
+			.AsNoTracking()
+			.Select(p => new ProductSummary(
+				p.Id,
+				p.Brand,
+				p.Name
+			)).ToListAsync(ct);
+
+		return summaries;
 	}
 }

@@ -10,11 +10,12 @@ internal static class ListProductSummaries
 		router.MapGet("/products", Endpoint);
 	}
 
-	private static Ok<List<ProductSummary>> Endpoint(
-		[FromServices] ListProductSummariesRequestHandler handler
+	private static async Task<Ok<List<ProductSummary>>> Endpoint(
+		[FromServices] ListProductSummariesRequestHandler handler,
+		CancellationToken ct
 	)
 	{
-		var summaries = handler.Handle();
+		var summaries = await handler.HandleAsync(ct);
 
 		return TypedResults.Ok(summaries);
 	}
