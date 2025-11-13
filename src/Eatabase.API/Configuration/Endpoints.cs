@@ -8,5 +8,6 @@ internal static class EndpointsConfiguration
 	{
 		CreateProduct.Register(router);
 		ListProductSummaries.Register(router);
+		GetProductDetails.Register(router);
 	}
 }
