@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Eatabase.API.IntegrationTests.CreateProduct;
+namespace Eatabase.API.IntegrationTests;
 
 public class InMemoryDbWebApplicationFactory : WebApplicationFactory<Program>
 {
