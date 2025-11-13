@@ -10,8 +10,16 @@ internal static class GetProductDetails
 		router.MapGet("/products/{id:guid}", Endpoint);
 	}
 
-	private static Ok Endpoint([FromRoute] Guid id)
+	private static Results<NotFound, Ok<ProductDetails>> Endpoint(
+		[FromServices] GetProductDetailsRequestHandler handler,
+		[FromRoute] Guid id
+	)
 	{
-		return TypedResults.Ok();
+		var product = handler.Handle(id);
+
+		if (product is null)
+			return TypedResults.NotFound();
+
+		return TypedResults.Ok(product);
 	}
 }

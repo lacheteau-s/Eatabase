@@ -20,6 +20,8 @@ internal static class ServicesConfiguration
 		services.AddScoped<IValidator<CreateProductRequest>, CreateProductRequestValidator>();
 
 		services.AddScoped<ListProductSummariesRequestHandler>();
+
+		services.AddScoped<GetProductDetailsRequestHandler>();
 	}
 
 	private static void AddDbContextWithConnectionString<T>(
