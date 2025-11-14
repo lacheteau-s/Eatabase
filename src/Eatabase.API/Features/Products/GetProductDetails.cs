@@ -10,12 +10,13 @@ internal static class GetProductDetails
 		router.MapGet("/products/{id:guid}", Endpoint);
 	}
 
-	private static Results<NotFound, Ok<ProductDetails>> Endpoint(
+	private static async Task<Results<NotFound, Ok<ProductDetails>>> Endpoint(
 		[FromServices] GetProductDetailsRequestHandler handler,
-		[FromRoute] Guid id
+		[FromRoute] Guid id,
+		CancellationToken ct
 	)
 	{
-		var product = handler.Handle(id);
+		var product = await handler.HandleAsync(id, ct);
 
 		if (product is null)
 			return TypedResults.NotFound();
