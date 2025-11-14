@@ -1,22 +1,37 @@
 using System.Net;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Eatabase.API.IntegrationTests.GetProductDetails;
 
 public class GetProductDetailsTests(
-	WebApplicationFactory<Program> factory
-) : IClassFixture<WebApplicationFactory<Program>>
+	InMemoryDbWebApplicationFactory factory
+) : IClassFixture<InMemoryDbWebApplicationFactory>
 {
-	private readonly HttpClient _client = factory.CreateClient();
+	private readonly GetProductDetailsIntegrationTestsHelpers _helpers = new (factory);
 
 	[Fact]
-	internal async Task GetProductDetails_Returns_NotFound()
+	internal async Task GetProductDetails_When_IdDoesNotExist_Returns_NotFound()
 	{
 		// Act
-		var response = await _client.GetAsync($"/products/{Guid.NewGuid()}");
+		var response = await _helpers.GetProductDetails(Guid.NewGuid());
 
 		// Assert
 		response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+	}
+
+	[Fact]
+	internal async Task GetProductDetails_When_IdExists_Returns_Ok_With_ProductDetails()
+	{
+		// Arrange
+		var product = GetProductDetailsIntegrationTestsData.Product;
+		await _helpers.InsertProduct(product);
+
+		// Act
+		var (response, result) = await _helpers.GetProductDetailsWithResult(product.Id);
+
+		// Assert
+		response.StatusCode.Should().Be(HttpStatusCode.OK);
+		result.Should().NotBeNull();
+		result.Id.Should().Be(product.Id);
 	}
 }
