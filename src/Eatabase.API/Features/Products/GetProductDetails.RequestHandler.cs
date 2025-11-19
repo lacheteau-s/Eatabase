@@ -1,17 +1,18 @@
 using Eatabase.API.Data;
+using Eatabase.API.Results;
 
 namespace Eatabase.API.Features.Products;
 
 internal sealed class GetProductDetailsRequestHandler(AppDbContext dbContext)
 {
-	public async Task<ProductDetails?> HandleAsync(Guid id, CancellationToken ct)
+	public async Task<Result<ProductDetails>> HandleAsync(Guid id, CancellationToken ct)
 	{
 		var product = await dbContext.Products.FindAsync([id], ct);
 
 		if (product is null)
-			return null;
+			return Result.Failure<ProductDetails>();
 
-		return new ProductDetails(
+		return Result.Success(new ProductDetails(
 			product.Id,
 			product.CreatedAt,
 			product.UpdatedAt,
@@ -27,6 +28,6 @@ internal sealed class GetProductDetailsRequestHandler(AppDbContext dbContext)
 			product.Sugars,
 			product.Fiber,
 			product.Protein
-		);
+		));
 	}
 }

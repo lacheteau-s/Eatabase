@@ -1,17 +1,18 @@
 using Eatabase.API.Data;
+using Eatabase.API.Results;
 
 namespace Eatabase.API.Features.Products;
 
 internal class CreateProductRequestHandler(AppDbContext dbContext)
 {
-	public async Task<Guid?> HandleAsync(CreateProductRequest request, CancellationToken ct)
+	public async Task<Result<Guid>> HandleAsync(CreateProductRequest request, CancellationToken ct)
 	{
 		var exists = dbContext.Products.Any(p =>
 			p.Brand == request.Brand && p.Name == request.Name
 		);
 
 		if (exists)
-			return null;
+			return Result.Failure<Guid>();
 
 		var product = new Product
 		{
@@ -34,6 +35,6 @@ internal class CreateProductRequestHandler(AppDbContext dbContext)
 
 		await dbContext.SaveChangesAsync(ct);
 
-		return product.Id;
+		return Result.Success(product.Id);
 	}
 }

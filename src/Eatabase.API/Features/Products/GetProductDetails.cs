@@ -16,11 +16,10 @@ internal static class GetProductDetails
 		CancellationToken ct
 	)
 	{
-		var product = await handler.HandleAsync(id, ct);
+		var result = await handler.HandleAsync(id, ct);
 
-		if (product is null)
-			return TypedResults.NotFound();
-
-		return TypedResults.Ok(product);
+		return result.IsFailure
+			? TypedResults.NotFound()
+			: TypedResults.Ok(result.Value);
 	}
 }
