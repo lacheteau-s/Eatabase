@@ -24,16 +24,17 @@ public class GetProductDetailsRequestHandlerTests
 	}
 
 	[Fact]
-	internal async Task Handle_When_IdDoesNotExist_Returns_Null()
+	internal async Task Handle_When_IdDoesNotExist_Returns_Failure()
 	{
 		var result = await _handler.HandleAsync(Guid.NewGuid(), default);
 
-		result.Should().BeNull();
+		result.IsFailure.Should().BeTrue();
+		// result.Should().BeNull();
 	}
 
 	[Theory]
 	[MemberData(nameof(TestData.Products), MemberType = typeof(TestData))]
-	internal async Task Handle_When_IdExists_Returns_ProductDetails(Product product)
+	internal async Task Handle_When_IdExists_Returns_Success_With_ProductDetails(Product product)
 	{
 		// Arrange
 		_dbContext.Products.Add(product);
@@ -43,21 +44,25 @@ public class GetProductDetailsRequestHandlerTests
 		var result = await _handler.HandleAsync(product.Id, default);
 
 		// Assert
-		result.Should().NotBeNull();
-		result.Id.Should().Be(product.Id);
-		result.CreatedAt.Should().Be(product.CreatedAt);
-		result.UpdatedAt.Should().Be(product.UpdatedAt);
-		result.Brand.Should().Be(product.Brand);
-		result.Name.Should().Be(product.Name);
-		result.ServingSize.Should().Be(product.ServingSize);
-		result.ServingSizeMetric.Should().Be(product.ServingSizeMetric);
-		result.Calories.Should().Be(product.Calories);
-		result.TotalFat.Should().Be(product.TotalFat);
-		result.SaturatedFat.Should().Be(product.SaturatedFat);
-		result.TransFat.Should().Be(product.TransFat);
-		result.TotalCarbs.Should().Be(product.TotalCarbs);
-		result.Sugars.Should().Be(product.Sugars);
-		result.Fiber.Should().Be(product.Fiber);
-		result.Protein.Should().Be(product.Protein);
+		result.IsSuccess.Should().BeTrue();
+		result.Value.Should().NotBeNull();
+
+		var details = result.Value;
+
+		details.Id.Should().Be(product.Id);
+		details.CreatedAt.Should().Be(product.CreatedAt);
+		details.UpdatedAt.Should().Be(product.UpdatedAt);
+		details.Brand.Should().Be(product.Brand);
+		details.Name.Should().Be(product.Name);
+		details.ServingSize.Should().Be(product.ServingSize);
+		details.ServingSizeMetric.Should().Be(product.ServingSizeMetric);
+		details.Calories.Should().Be(product.Calories);
+		details.TotalFat.Should().Be(product.TotalFat);
+		details.SaturatedFat.Should().Be(product.SaturatedFat);
+		details.TransFat.Should().Be(product.TransFat);
+		details.TotalCarbs.Should().Be(product.TotalCarbs);
+		details.Sugars.Should().Be(product.Sugars);
+		details.Fiber.Should().Be(product.Fiber);
+		details.Protein.Should().Be(product.Protein);
 	}
 }
