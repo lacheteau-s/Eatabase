@@ -25,11 +25,10 @@ internal static class CreateProduct
 		if (!validationResult.IsValid)
 			return TypedResults.ValidationProblem(validationResult.ToDictionary());
 
-		var id = await handler.HandleAsync(request, ct);
+		var result = await handler.HandleAsync(request, ct);
 
-		if (id is null)
-			return TypedResults.Conflict();
-
-		return TypedResults.Created($"{_route}/{id.Value}", id.Value);
+		return result.IsFailure
+			? TypedResults.Conflict()
+			: TypedResults.Created($"{_route}/{result.Value}", result.Value);
 	}
 }
